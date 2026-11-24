@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz App</title>
+<style>
+  /* ---------- Design tokens ---------- */
+  :root {
+    --bg: #eef0fb;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --green: #16a34a;
+    --green-bg: #dcfce7;
+    --red: #dc2626;
+    --red-bg: #fee2e2;
+    --amber: #d97706;
+    --radius: 16px;
+    --shadow: 0 8px 30px rgba(31, 41, 55, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(160deg, #e0e7ff 0%, var(--bg) 50%, #fce7f3 100%);
+    color: var(--text);
+    line-height: 1.5;
+
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .app { width: 100%; max-width: 680px; }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px;
+  }
+
+  .hidden { display: none !important; }
+
+  h1 { font-size: 1.9rem; margin-bottom: 6px; }
+  h2 { font-size: 1.15rem; margin-bottom: 12px; }
+  .subtitle { color: var(--muted); margin-bottom: 24px; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    font: inherit;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 22px;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+
+  }
+  .btn:hover { background: var(--primary-dark); }
+  .btn:active { transform: scale(0.98); }
+  .btn.block { width: 100%; }
+
+  /* ---------- Start screen ---------- */
+  .option-group { margin-bottom: 24px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  .chip {
+    font: inherit;
+    font-weight: 600;
+    padding: 12px 18px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .chip:hover { border-color: var(--primary); }
+  .chip[aria-pressed="true"] {
+    border-color: var(--primary);
+    background: #eef2ff;
+    color: var(--primary-dark);
+  }
+
+  /* ---------- Quiz screen ---------- */
+  .quiz-top {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+
+    margin-bottom: 14px;
+  }
+  #scoreText { color: var(--primary-dark); }
+
+  .timer { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .timer-track {
+    flex: 1;
+    height: 10px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .timer-fill {
+    height: 100%;
+    width: 100%;
+    background: var(--primary);
+    border-radius: 99px;
+  }
+  .timer-fill.warning { background: var(--red); }
+  #timerLabel { width: 34px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .question { font-size: 1.35rem; margin-bottom: 20px; line-height: 1.35; }
+
+  .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .answer {
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    padding: 16px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .answer:hover:not(:disabled) { border-color: var(--primary); background: #f5f7ff; }
+  .answer:disabled { cursor: default; }
+  .answer:disabled:not(.correct):not(.wrong) { opacity: 0.5; }
+  .answer.correct { background: var(--green-bg); border-color: var(--green); color: #14532d; }
+  .answer.wrong { background: var(--red-bg); border-color: var(--red); color: #7f1d1d; }
+
+  .feedback { min-height: 1.6em; margin-top: 18px; font-weight: 600; }
+  .feedback.good { color: var(--green); }
+  .feedback.bad { color: var(--red); }
+  .feedback.late { color: var(--amber); }
+
+  #nextBtn { margin-top: 14px; }
+
+  /* ---------- Results screen ---------- */
+  .result-head { text-align: center; margin-bottom: 24px; }
+  .big-score { font-size: 3.2rem; font-weight: 800; color: var(--primary-dark); }
+  .percent { color: var(--muted); font-weight: 600; }
+  .message { margin: 10px 0 20px; font-size: 1.1rem; }
+
+  .review { list-style: none; margin: 8px 0 24px; display: grid; gap: 12px; }
+  .review li {
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .review li.right { border-left-color: var(--green); }
+
+  .review li.miss  { border-left-color: var(--red); }
+  .review-q { font-weight: 600; margin-bottom: 4px; }
+  .review-line { font-size: 0.9rem; color: var(--muted); }
+  .review-line strong.ok { color: var(--green); }
+  .review-line strong.no { color: var(--red); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 520px) {
+    .card { padding: 20px; }
+    .answers { grid-template-columns: 1fr; }
+    h1 { font-size: 1.6rem; }
+    .question { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<main class="app">
+
+  <!-- START SCREEN -->
+  <section id="startScreen" class="card">
+    <h1>🧠 Quiz Time</h1>
+    <p class="subtitle">Pick a category and test your knowledge. You get 15 seconds per question!</p>
+
+    <div class="option-group">
+      <h2>Category</h2>
+      <div class="chips" id="categoryChips"></div>
+    </div>
+
+    <div class="option-group">
+      <h2>Number of questions</h2>
+      <div class="chips" id="countChips"></div>
+    </div>
+
+
+    <button class="btn block" id="startBtn">Start quiz</button>
+  </section>
+
+  <!-- QUIZ SCREEN -->
+  <section id="quizScreen" class="card hidden">
+    <div class="quiz-top">
+      <span id="progressText"></span>
+      <span id="scoreText"></span>
+    </div>
+
+    <div class="timer">
+      <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+      <span id="timerLabel">15s</span>
+    </div>
+
+    <h2 class="question" id="questionText"></h2>
+    <div class="answers" id="answers"></div>
+    <p class="feedback" id="feedback" role="status"></p>
+    <button class="btn block hidden" id="nextBtn">Next question</button>
+  </section>
+
+  <!-- RESULTS SCREEN -->
+  <section id="resultScreen" class="card hidden">
+    <div class="result-head">
+      <div class="big-score" id="finalScore"></div>
+      <div class="percent" id="finalPercent"></div>
+      <p class="message" id="finalMessage"></p>
+    </div>
+
+    <h2>Review</h2>
+    <ul class="review" id="review"></ul>
+
+
+    <button class="btn block" id="againBtn">Play again</button>
+  </section>
+
+</main>
+
+<script>
+/* ==========================================================
+   1. QUESTION BANK
+   Each question: [question, correct answer, wrong1, wrong2, wrong3]
+   The answers are shuffled every time, so the correct one
+   is never in a predictable position.
+   ========================================================== */
+const TIME_LIMIT = 15; // seconds per question
+const COUNT_OPTIONS = [5, 8, 10];
+
+const CATEGORIES = {
+  general: {
+    label: "🌍 General Knowledge",
+    questions: [
+      ["What is the capital city of Australia?", "Canberra", "Sydney", "Melbourne", "Perth"],
+      ["How many continents are there?", "7", "5", "6", "8"],
+      ["Who painted the Mona Lisa?", "Leonardo da Vinci", "Michelangelo", "Raphael", "Vincent van Gogh"],
+      ["Which is the largest ocean on Earth?", "Pacific Ocean", "Atlantic Ocean", "Indian Ocean", "Arctic Ocean"],
+      ["What is the currency of Japan?", "Yen", "Won", "Yuan", "Peso"],
+      ["How many days are there in a leap year?", "366", "365", "364", "367"],
+      ["Which is the longest river in Africa?", "Nile", "Congo", "Niger", "Zambezi"],
+      ["Who wrote the play Romeo and Juliet?", "William Shakespeare", "Charles Dickens", "Jane Austen", "Mark Twain"],
+      ["What is the smallest country in the world?", "Vatican City", "Monaco", "San Marino", "Liechtenstein"],
+      ["How many sides does a hexagon have?", "6", "5", "7", "8"]
+    ]
+  },
+
+  science: {
+    label: "🔬 Science",
+    questions: [
+      ["Which planet is known as the Red Planet?", "Mars", "Venus", "Jupiter", "Mercury"],
+      ["What is the chemical formula of water?", "H2O", "CO2", "O2", "HO"],
+      ["Which gas do plants absorb from the air for photosynthesis?", "Carbon dioxide", "Oxygen", "Nitrogen", "Hydrogen"],
+      ["What is the hardest natural substance?", "Diamond", "Gold", "Iron", "Quartz"],
+      ["How many bones does an adult human body have?", "206", "180", "212", "300"],
+      ["Roughly how fast does light travel?", "300,000 km/s", "150,000 km/s", "30,000 km/s", "3,000,000 km/s"],
+      ["Which force pulls objects towards the Earth?", "Gravity", "Magnetism", "Friction", "Inertia"],
+      ["Which organ pumps blood around the body?", "Heart", "Liver", "Lungs", "Kidney"],
+      ["What is the chemical symbol for gold?", "Au", "Ag", "Gd", "Go"],
+      ["Which star is closest to the Earth?", "The Sun", "Proxima Centauri", "Sirius", "Polaris"]
+    ]
+  },
+  football: {
+    label: "⚽ Football / Soccer",
+    questions: [
+      ["How many players does each team have on the pitch?", "11", "10", "9", "12"],
+      ["Which country won the 2018 FIFA World Cup?", "France", "Croatia", "Brazil", "Germany"],
+      ["Which country won the 2022 FIFA World Cup?", "Argentina", "France", "Croatia", "Morocco"],
+      ["Who has won the most Ballon d'Or awards?", "Lionel Messi", "Cristiano Ronaldo", "Michel Platini", "Johan Cruyff"],
+      ["How long is a standard match (without extra time)?", "90 minutes", "80 minutes", "100 minutes", "120 minutes"],
+      ["What colour card means a player is sent off?", "Red", "Yellow", "Blue", "Green"],
+      ["Which country hosted the 2014 World Cup?", "Brazil", "Germany", "South Africa", "Russia"],
+      ["Which club is nicknamed \"The Red Devils\"?", "Manchester United", "Liverpool", "Arsenal", "Chelsea"],
+      ["Which country won the 2010 World Cup?", "Spain", "Netherlands", "Germany", "Uruguay"],
+      ["Which country has won the most men's World Cups?", "Brazil", "Germany", "Italy", "Argentina"]
+    ]
+  }
+};
+
+
+/* ==========================================================
+   2. STATE & DOM HELPERS
+   ========================================================== */
+const $ = (id) => document.getElementById(id);
+
+// Create an element with a class and text (textContent is safe from HTML injection)
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+// What the player picked on the start screen
+const settings = { category: "general", count: 10 };
+
+// Everything about the quiz currently being played
+let quiz = null;
+
+// Fisher-Yates shuffle: returns a new shuffled array
+function shuffle(array) {
+  const a = [...array];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Show one screen and hide the others
+function showScreen(id) {
+  ["startScreen", "quizScreen", "resultScreen"].forEach((s) =>
+
+    $(s).classList.toggle("hidden", s !== id)
+  );
+}
+
+/* ==========================================================
+   3. START SCREEN
+   ========================================================== */
+function makeChip(text, selected, onClick) {
+  const b = el("button", "chip", text);
+  b.type = "button";
+  b.setAttribute("aria-pressed", selected);
+  b.addEventListener("click", onClick);
+  return b;
+}
+
+function renderStart() {
+  const catBox = $("categoryChips");
+  const countBox = $("countChips");
+  catBox.innerHTML = "";
+  countBox.innerHTML = "";
+
+  Object.keys(CATEGORIES).forEach((key) => {
+    catBox.appendChild(
+      makeChip(CATEGORIES[key].label, key === settings.category, () => {
+        settings.category = key;
+        renderStart();
+      })
+    );
+  });
+
+  COUNT_OPTIONS.forEach((n) => {
+    countBox.appendChild(
+
+      makeChip(`${n} questions`, n === settings.count, () => {
+        settings.count = n;
+        renderStart();
+      })
+    );
+  });
+}
+
+/* ==========================================================
+   4. START A QUIZ
+   ========================================================== */
+function startQuiz() {
+  const pool = CATEGORIES[settings.category].questions;
+
+  // Pick random questions and shuffle each question's answers
+  const questions = shuffle(pool)
+    .slice(0, settings.count)
+    .map(([text, correct, ...wrong]) => ({
+      text,
+      correct,
+      options: shuffle([correct, ...wrong])
+    }));
+
+  quiz = {
+    questions,
+    index: 0,
+    score: 0,
+    history: [],     // one record per answered question (used in the review)
+    locked: false,   // true after the player answers (prevents double clicks)
+    timerId: null,
+    endTime: 0
+  };
+
+
+  showScreen("quizScreen");
+  showQuestion();
+}
+
+/* ==========================================================
+   5. SHOW A QUESTION
+   ========================================================== */
+function showQuestion() {
+  const q = quiz.questions[quiz.index];
+  quiz.locked = false;
+
+  $("progressText").textContent = `Question ${quiz.index + 1} of ${quiz.questions.length}`;
+  $("scoreText").textContent = `Score: ${quiz.score}`;
+  $("questionText").textContent = q.text;
+
+  // Build the four answer buttons
+  const box = $("answers");
+  box.innerHTML = "";
+  q.options.forEach((option) => {
+    const btn = el("button", "answer", option);
+    btn.type = "button";
+    btn.addEventListener("click", () => handleAnswer(option));
+    box.appendChild(btn);
+  });
+
+  $("feedback").textContent = "";
+  $("feedback").className = "feedback";
+  $("nextBtn").classList.add("hidden");
+
+  startTimer();
+}
+
+
+/* ==========================================================
+   6. TIMER (15 seconds with a shrinking progress bar)
+   We compare against Date.now() so the timer stays accurate
+   even if the browser slows down the interval.
+   ========================================================== */
+function startTimer() {
+  clearInterval(quiz.timerId);
+  quiz.endTime = Date.now() + TIME_LIMIT * 1000;
+  updateTimer(TIME_LIMIT * 1000);
+  quiz.timerId = setInterval(() => {
+    const remaining = quiz.endTime - Date.now();
+    if (remaining <= 0) {
+      handleAnswer(null); // time's up: no answer selected
+    } else {
+      updateTimer(remaining);
+    }
+  }, 50);
+}
+
+function updateTimer(remainingMs) {
+  const fill = $("timerFill");
+  fill.style.width = `${Math.max(remainingMs, 0) / (TIME_LIMIT * 1000) * 100}%`;
+  fill.classList.toggle("warning", remainingMs <= 5000);
+  $("timerLabel").textContent = `${Math.ceil(Math.max(remainingMs, 0) / 1000)}s`;
+}
+
+/* ==========================================================
+   7. HANDLE AN ANSWER (choice is null when time runs out)
+   ========================================================== */
+function handleAnswer(choice) {
+  if (quiz.locked) return;
+
+  quiz.locked = true;
+  clearInterval(quiz.timerId);
+
+  const q = quiz.questions[quiz.index];
+  const isCorrect = choice === q.correct;
+  const feedback = $("feedback");
+
+  // Colour the buttons: right answer green, wrong pick red
+  [...$("answers").children].forEach((btn) => {
+    btn.disabled = true;
+    if (btn.textContent === q.correct) btn.classList.add("correct");
+    else if (btn.textContent === choice) btn.classList.add("wrong");
+  });
+
+  if (choice === null) {
+    updateTimer(0);
+    feedback.textContent = "⏰ Time's up! The correct answer is highlighted.";
+    feedback.classList.add("late");
+  } else if (isCorrect) {
+    quiz.score++;
+    feedback.textContent = "✅ Correct!";
+    feedback.classList.add("good");
+  } else {
+    feedback.textContent = "❌ Not quite. The correct answer is highlighted.";
+    feedback.classList.add("bad");
+  }
+
+  $("scoreText").textContent = `Score: ${quiz.score}`;
+  quiz.history.push({ text: q.text, chosen: choice, correct: q.correct });
+
+  const isLast = quiz.index === quiz.questions.length - 1;
+  $("nextBtn").textContent = isLast ? "See results" : "Next question";
+
+  $("nextBtn").classList.remove("hidden");
+  $("nextBtn").focus();
+}
+
+function nextQuestion() {
+  quiz.index++;
+  if (quiz.index >= quiz.questions.length) showResults();
+  else showQuestion();
+}
+
+/* ==========================================================
+   8. RESULTS SCREEN
+   ========================================================== */
+function scoreMessage(percent) {
+  if (percent === 100) return "🏆 Perfect score! Absolutely flawless.";
+  if (percent >= 80) return "🎉 Excellent work! You really know your stuff.";
+  if (percent >= 60) return "👍 Good job! A little more practice and you'll ace it.";
+  if (percent >= 40) return "🙂 Not bad, but there's room to improve.";
+  return "📚 Keep learning, you'll do better next time!";
+}
+
+function showResults() {
+  const total = quiz.questions.length;
+  const percent = Math.round((quiz.score / total) * 100);
+
+  $("finalScore").textContent = `${quiz.score} / ${total}`;
+  $("finalPercent").textContent = `${percent}% correct`;
+  $("finalMessage").textContent = scoreMessage(percent);
+
+  // Review list: every question, the player's answer and the correct one
+  const list = $("review");
+  list.innerHTML = "";
+
+  quiz.history.forEach((item, i) => {
+    const right = item.chosen === item.correct;
+    const li = el("li", right ? "right" : "miss");
+
+    li.appendChild(el("div", "review-q", `${i + 1}. ${item.text}`));
+
+    const yours = el("div", "review-line", "Your answer: ");
+    yours.appendChild(
+      el("strong", right ? "ok" : "no", item.chosen === null ? "No answer (time's up)" : item.chosen)
+    );
+    li.appendChild(yours);
+
+    if (!right) {
+      const correct = el("div", "review-line", "Correct answer: ");
+      correct.appendChild(el("strong", "ok", item.correct));
+      li.appendChild(correct);
+    }
+    list.appendChild(li);
+  });
+
+  showScreen("resultScreen");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ==========================================================
+   9. EVENTS & INITIAL SETUP
+   ========================================================== */
+$("startBtn").addEventListener("click", startQuiz);
+$("nextBtn").addEventListener("click", nextQuestion);
+$("againBtn").addEventListener("click", () => {
+  showScreen("startScreen");
+  renderStart();
+
+});
+
+renderStart();
+</script>
+</body>
+</html>
