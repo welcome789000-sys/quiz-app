@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz App</title>
+<title>Yalla Quiz | Test Yourself</title>
 <style>
   /* ---------- Design tokens ---------- */
   :root {
@@ -183,16 +183,16 @@
 
   <!-- START SCREEN -->
   <section id="startScreen" class="card">
-    <h1>🧠 Quiz Time</h1>
-    <p class="subtitle">Pick a category and test your knowledge. You get 15 seconds per question!</p>
+    <h1>Yalla Quiz</h1>
+    <p class="subtitle">Choose a topic and see how much you really know. 15 seconds a question, no googling.</p>
 
     <div class="option-group">
-      <h2>Category</h2>
+      <h2>Topic</h2>
       <div class="chips" id="categoryChips"></div>
     </div>
 
     <div class="option-group">
-      <h2>Number of questions</h2>
+      <h2>How many questions</h2>
       <div class="chips" id="countChips"></div>
     </div>
 
@@ -247,7 +247,7 @@ const COUNT_OPTIONS = [5, 8, 10];
 
 const CATEGORIES = {
   general: {
-    label: "🌍 General Knowledge",
+    label: "General Knowledge",
     questions: [
       ["What is the capital city of Australia?", "Canberra", "Sydney", "Melbourne", "Perth"],
       ["How many continents are there?", "7", "5", "6", "8"],
@@ -263,7 +263,7 @@ const CATEGORIES = {
   },
 
   science: {
-    label: "🔬 Science",
+    label: "Science",
     questions: [
       ["Which planet is known as the Red Planet?", "Mars", "Venus", "Jupiter", "Mercury"],
       ["What is the chemical formula of water?", "H2O", "CO2", "O2", "HO"],
@@ -278,7 +278,7 @@ const CATEGORIES = {
     ]
   },
   football: {
-    label: "⚽ Football / Soccer",
+    label: "Football",
     questions: [
       ["How many players does each team have on the pitch?", "11", "10", "9", "12"],
       ["Which country won the 2018 FIFA World Cup?", "France", "Croatia", "Brazil", "Germany"],
@@ -476,14 +476,14 @@ function handleAnswer(choice) {
 
   if (choice === null) {
     updateTimer(0);
-    feedback.textContent = "⏰ Time's up! The correct answer is highlighted.";
+    feedback.textContent = "Time's up. The right answer is highlighted.";
     feedback.classList.add("late");
   } else if (isCorrect) {
     quiz.score++;
-    feedback.textContent = "✅ Correct!";
+    feedback.textContent = "Correct.";
     feedback.classList.add("good");
   } else {
-    feedback.textContent = "❌ Not quite. The correct answer is highlighted.";
+    feedback.textContent = "Not this time. The right answer is highlighted.";
     feedback.classList.add("bad");
   }
 
@@ -507,11 +507,11 @@ function nextQuestion() {
    8. RESULTS SCREEN
    ========================================================== */
 function scoreMessage(percent) {
-  if (percent === 100) return "🏆 Perfect score! Absolutely flawless.";
-  if (percent >= 80) return "🎉 Excellent work! You really know your stuff.";
-  if (percent >= 60) return "👍 Good job! A little more practice and you'll ace it.";
-  if (percent >= 40) return "🙂 Not bad, but there's room to improve.";
-  return "📚 Keep learning, you'll do better next time!";
+  if (percent === 100) return "Full marks. Nothing missed.";
+  if (percent >= 80) return "Very strong score. You know this stuff.";
+  if (percent >= 60) return "Solid. A bit more practice and you'll get full marks.";
+  if (percent >= 40) return "Not bad, still room to improve.";
+  return "Review the answers below and try again.";
 }
 
 function showResults() {
