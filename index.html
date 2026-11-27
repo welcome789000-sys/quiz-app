@@ -176,6 +176,26 @@
     h1 { font-size: 1.6rem; }
     .question { font-size: 1.2rem; }
   }
+
+/* ---------- Yalla Quiz: bold arcade look ---------- */
+:root{--bg:#fff3c4;--card:#ffffff;--text:#111;--muted:#444;--border:#111;--primary:#ff5a36;--primary-dark:#d93d1c;--green:#0f9d58;--green-bg:#c8f7dc;--red:#d90429;--red-bg:#ffd6dc;--radius:6px;--shadow:6px 6px 0 #111}
+body{background:var(--bg);font-family:"Trebuchet MS",Verdana,system-ui,sans-serif;align-items:flex-start}
+.card{border:3px solid #111}
+h1{font-size:2.3rem;text-transform:uppercase;letter-spacing:.03em;transform:rotate(-1deg);display:inline-block;background:#ffd23f;padding:2px 12px;border:3px solid #111}
+.btn{border:3px solid #111;border-radius:4px;box-shadow:4px 4px 0 #111;text-transform:uppercase;letter-spacing:.05em}
+.btn:hover{background:var(--primary-dark)}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #111}
+.chip{border:3px solid #111;border-radius:4px;background:#fff}
+.chip[aria-pressed="true"]{background:#ffd23f;color:#111;border-color:#111;box-shadow:3px 3px 0 #111}
+.answers{grid-template-columns:1fr}
+.answer{border:3px solid #111;border-radius:4px;box-shadow:3px 3px 0 #111}
+.answer:hover:not(:disabled){background:#fff3c4;border-color:#111}
+.answer.correct{border-color:#111}.answer.wrong{border-color:#111}
+.timer-track{border:3px solid #111;border-radius:4px;height:16px;background:#fff}
+.timer-fill{border-radius:0;background:var(--primary)}
+.big-score{color:var(--primary);font-size:4rem}
+#scoreText{color:var(--primary-dark)}
+.review li{border:2px solid #111;border-left-width:8px}
 </style>
 </head>
 <body>
